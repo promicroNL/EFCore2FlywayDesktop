@@ -13,7 +13,7 @@ $text = @"
 Write-Host $text
 
 # Specify the paths to the EF Core and Flyway migration files
-$flywayProjectPath = "C:\work\EFCoreFWD\Flyway_alt\"
+$flywayProjectPath = "C:\work\EFCore2FlywayDesktop\Flyway_alt\"
 $flywayProjectMigrationPath = Join-Path $flywayProjectPath "Migrations"
 
 # Apply the dev database to schema-model
