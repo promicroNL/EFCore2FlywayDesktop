@@ -14,9 +14,9 @@ $text = @"
 Write-Host $text
 
 # Specify the paths to the EF Core and Flyway migration files
-$efCore = "C:\work\EFCoreFWD\EFCore"
-$efCoreMigrationFilesPath = "C:\work\EFCoreFWD\EFCore\Migrations\"
-$flywayProjectPath = "C:\work\EFCoreFWD\Flyway\"
+$efCore = "C:\work\EFCore2FlywayDesktop\EFCore"
+$efCoreMigrationFilesPath = "C:\work\EFCore2FlywayDesktop\EFCore\Migrations\"
+$flywayProjectPath = "C:\work\EFCore2FlywayDesktop\Flyway\"
 $fwMigrationFilesPath = Join-Path $flywayProjectPath "migrations"
 
 # Get a list of the EF Core migration files

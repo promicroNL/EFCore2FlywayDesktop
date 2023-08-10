@@ -42,4 +42,5 @@ $efCall = ('dotnet ef database  update --connection "{0}"' -f $ConnectionString)
 write-host ('Run: {0}' -f $efCall)
 Invoke-Expression $efCall
 
-../Scripts/RunFwd-FromDevDatabaseToMigrations.ps1
+# run the script RunFwd-FromDevDatabaseToMigrations
+# provided in the repo: https://github.com/promicroNL/flyway-dev-automation
