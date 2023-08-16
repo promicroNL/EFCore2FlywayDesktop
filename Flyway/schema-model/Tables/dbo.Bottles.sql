@@ -5,7 +5,7 @@ CREATE TABLE [dbo].[Bottles]
 [DistilleryId] [int] NOT NULL,
 [Age] [int] NOT NULL,
 [AlcoholByVolume] [real] NOT NULL,
-[WhiskyBaseId] [int] NOT NULL CONSTRAINT [DF__Bottles__WhiskyB__47DBAE45] DEFAULT ((0))
+[WhiskyBaseId] [int] NOT NULL CONSTRAINT [DF__Bottles__WhiskyB__47FBA9D6] DEFAULT ((0))
 )
 GO
 ALTER TABLE [dbo].[Bottles] ADD CONSTRAINT [PK_Bottles] PRIMARY KEY CLUSTERED ([Id])

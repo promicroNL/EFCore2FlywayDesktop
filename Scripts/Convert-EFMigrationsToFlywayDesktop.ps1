@@ -40,8 +40,9 @@ else {
     [int]$version = $lastMigrationFile.Substring(1, 3)    
 }
 
-## Loop through each EF Core migration file 
+## Loop through each EF Core migration file with these defaults
 $PreviousEfCoreMigrationFileBaseName = "0"
+$undoMigrationStarted = $false
 
 # Set the working directory to the project directory for the dotnet call
 Set-Location $efCore
