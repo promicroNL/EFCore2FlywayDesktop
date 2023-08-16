@@ -108,33 +108,30 @@ $flywayDevUser = get-content "$flywayProjectPath/flyway-dev.user.json" | Convert
 $url = $flywayDevUser.deployment.shadowDatabase.connectionProvider.url
 
 # Parameters for Flyway command.
-$params = ('migrate -configFiles="flyway.conf" -workingDirectory="{0}" -url="{1}"' -f $flywayProjectPath, $url)
+$params = @("migrate", "-configFiles=flyway.conf", "-workingDirectory=$flywayProjectPath",  "-url=$url")
 
 # Migrate command
-$migrateCommand = ('flyway {0}' -f $params)
-Write-Host $migrateCommand
-Invoke-Expression $migrateCommand
+flyway @params
 
 # Populate the schema model from the migrations
+# Define temporary diff file and path
+$tempFilePath = Join-Path $env:LOCALAPPDATA "Temp\Redgate\Flyway Desktop\comparison_artifacts_Migrations_SchemaModel" 
 $diffArtifactFileName = New-Guid 
-$diffArtifactFilePath = Join-Path $env:LOCALAPPDATA 'Temp' $diffArtifactFileName
+$null = New-Item -ItemType Directory -Force -Path $tempFilePath
+$diffArtifactFilePath = Join-Path $tempFilePath  $diffArtifactFileName
+
 
 # Parameters for Flyway dev
-$commonParams = 
-"--artifact=$diffArtifactFilePath",
+$commonParams =
+@("--artifact=$diffArtifactFilePath",
 "--project=$flywayProjectPath",
-"--i-agree-to-the-eula"
+"--i-agree-to-the-eula")
 
-$diffParams = "diff --from=Migrations --to=SchemaModel " + $commonParams
-$takeParams = "take " + $commonParams
-$applyParams = "apply " + $commonParams
+$diffParams = @("diff", "--from=Migrations", "--to=Schemamodel") + $commonParams
+$takeParams = @("take") + $commonParams
+$applyParams = @("apply") + $commonParams
 
-$diffCommand = ('flyway-dev {0}' -f $diffParams)
-Write-Host $diffCommand
-Invoke-Expression $diffCommand
-
-$takeAndApplyCommand = ('flyway-dev {0} | flyway-dev {1}' -f $takeParams, $applyParams)     
-Write-Host $takeAndApplyCommand
-Invoke-Expression $takeAndApplyCommand
+flyway-dev @diffParams
+flyway-dev @takeParams | flyway-dev @applyParams
 
 Remove-Item $diffArtifactFilePath
