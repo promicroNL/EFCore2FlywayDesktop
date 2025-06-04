@@ -122,17 +122,24 @@ $null = New-Item -ItemType Directory -Force -Path $tempFilePath
 $diffArtifactFilePath = Join-Path $tempFilePath  $diffArtifactFileName
 
 
-# Parameters for Flyway dev
-$commonParams =
-@("--artifact=$diffArtifactFilePath",
-"--project=$flywayProjectPath",
-"--i-agree-to-the-eula")
 
-$diffParams = @("diff", "--from=Migrations", "--to=Schemamodel") + $commonParams
-$takeParams = @("take") + $commonParams
-$applyParams = @("apply") + $commonParams
+# Parameters for the Flyway CLI
+$commonParams = @(
+    "--artifact=$diffArtifactFilePath",
+    "--project=$flywayProjectPath",
+    "--i-agree-to-the-eula"
+)
 
-flyway-dev @diffParams
-flyway-dev @takeParams | flyway-dev @applyParams
+# Run a diff between the migrations folder and schema model and immediately
+# apply the changes to the schema model. This replaces the previous
+# `flyway-dev diff | take | apply` workflow.
+$diffModelParams = @(
+    "diff",
+    "model",
+    "--from=Migrations",
+    "--to=Schemamodel"
+) + $commonParams
+
+flyway @diffModelParams
 
 Remove-Item $diffArtifactFilePath

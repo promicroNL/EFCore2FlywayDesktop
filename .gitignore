@@ -1,3 +1,4 @@
 EFCore/bin/*
 EFCore/obj/*
 flyway-dev.user.json
+flyway.user.toml
