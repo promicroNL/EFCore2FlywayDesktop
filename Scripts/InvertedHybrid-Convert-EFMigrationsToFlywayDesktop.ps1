@@ -130,6 +130,20 @@ $commonParams = @(
     "--i-agree-to-the-eula"
 )
 
+
+
+
+# optional
+flyway diff "-diff.source=prod" "-diff.target=migrations" "-diff.buildEnvironment=shadow"
+flyway generate "-generate.types=baseline" "-generate.description=Baseline"
+
+# or directly
+flyway diff generate "-diff.source=schemaModel" "-diff.target=migrations" "-diff.buildEnvironment=shadow" "-generate.types=versioned,undo" "-generate.description=NewTableAdded"
+
+# Note that -baselineOnMigrate=true is passed to baseline the prod database as the schema history table does not exist yet.
+flyway migrate -baselineOnMigrate=true -environment=prod
+
+
 # Run a diff between the migrations folder and schema model and immediately
 # apply the changes to the schema model. This replaces the previous
 # `flyway-dev diff | take | apply` workflow.
@@ -140,6 +154,12 @@ $diffModelParams = @(
     "--to=Schemamodel"
 ) + $commonParams
 
+# the new style
+# flyway diff "-diff.target=migrations" "-diff.target=schemaModel"
+# flyway model
+
 flyway @diffModelParams
 
 Remove-Item $diffArtifactFilePath
+
+# git commit and create PR
