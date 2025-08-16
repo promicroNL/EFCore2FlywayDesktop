@@ -9,7 +9,7 @@
 
 Description: update the install rank of flyway migration in the __EFMigrationsHistory table
 
-Created by: THR-2025-@promicroNL
+Created by: THR-2023-@promicroNL
  */
 
 UPDATE

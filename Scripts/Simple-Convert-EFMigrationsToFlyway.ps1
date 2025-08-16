@@ -9,14 +9,15 @@ $text = @"
         `~-,_-~,-~(_(_(_(_\  `;\                                                   \    \/\\/\/
 
 "@
-#Created by: THR-2023-@promicroNL
+#Created by: THR-2025-@promicroNL
 
 Write-Host $text
 
 # Specify the paths to the EF Core and Flyway migration files
-$efCore = "C:\work\EFCore2FlywayDesktop\EFCore"
-$efCoreMigrationFilesPath = "C:\work\EFCore2FlywayDesktop\EFCore\Migrations\"
-$flywayProjectPath = "C:\work\EFCore2FlywayDesktop\Flyway\"
+$efCore = "$PSScriptRoot\..\EFCore"
+$flywayProjectPath = "$PSScriptRoot\..\Flyway.simple\"
+
+$efCoreMigrationFilesPath = Join-Path $efCore "migrations"
 $fwMigrationFilesPath = Join-Path $flywayProjectPath "migrations"
 
 # Get a list of the EF Core migration files
@@ -103,63 +104,19 @@ foreach ($efCoreMigrationFile in $efCoreMigrationFiles) {
     }
 }
 
-# Apply the migrations to shadow database
-# prepare other information for Flyway commands.
-$flywayDevUser = get-content "$flywayProjectPath/flyway-dev.user.json" | ConvertFrom-Json
-$url = $flywayDevUser.deployment.shadowDatabase.connectionProvider.url
+# Make sure we run all commands in the Flyway project folder
+Set-Location $flywayProjectPath
 
-# Parameters for Flyway command.
-$params = @("migrate", "-configFiles=flyway.conf", "-workingDirectory=$flywayProjectPath",  "-url=$url")
+# Migrate and baseline production DB (schema history table doesn’t exist yet)
+$flywayMigrateParams = @{
+    FilePath     = "flyway"
+    ArgumentList = @(
+        "migrate",
+        "-baselineOnMigrate=true",
+        "-environment=PROD"
+    )
+}
+& $flywayMigrateParams.FilePath @($flywayMigrateParams.ArgumentList)
 
-# Migrate command
-flyway @params
-
-# Populate the schema model from the migrations
-# Define temporary diff file and path
-$tempFilePath = Join-Path $env:LOCALAPPDATA "Temp\Redgate\Flyway Desktop\comparison_artifacts_Migrations_SchemaModel" 
-$diffArtifactFileName = New-Guid 
-$null = New-Item -ItemType Directory -Force -Path $tempFilePath
-$diffArtifactFilePath = Join-Path $tempFilePath  $diffArtifactFileName
-
-
-
-# Parameters for the Flyway CLI
-$commonParams = @(
-    "--artifact=$diffArtifactFilePath",
-    "--project=$flywayProjectPath",
-    "--i-agree-to-the-eula"
-)
-
-
-
-
-# optional
-flyway diff "-diff.source=prod" "-diff.target=migrations" "-diff.buildEnvironment=shadow"
-flyway generate "-generate.types=baseline" "-generate.description=Baseline"
-
-# or directly
-flyway diff generate "-diff.source=schemaModel" "-diff.target=migrations" "-diff.buildEnvironment=shadow" "-generate.types=versioned,undo" "-generate.description=NewTableAdded"
-
-# Note that -baselineOnMigrate=true is passed to baseline the prod database as the schema history table does not exist yet.
-flyway migrate -baselineOnMigrate=true -environment=prod
-
-
-# Run a diff between the migrations folder and schema model and immediately
-# apply the changes to the schema model. This replaces the previous
-# `flyway-dev diff | take | apply` workflow.
-$diffModelParams = @(
-    "diff",
-    "model",
-    "--from=Migrations",
-    "--to=Schemamodel"
-) + $commonParams
-
-# the new style
-# flyway diff "-diff.target=migrations" "-diff.target=schemaModel"
-# flyway model
-
-flyway @diffModelParams
-
-Remove-Item $diffArtifactFilePath
 
 # git commit and create PR

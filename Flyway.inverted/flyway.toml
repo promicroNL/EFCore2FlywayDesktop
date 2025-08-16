@@ -22,6 +22,9 @@ developmentEnvironment = "development"
 shadowEnvironment = "shadow"
 enableMigrations = true
 
+  [flywayDesktop.generate]
+  undoScripts = true
+
 [redgateCompare]
 filterFile = "filter.rgf"
 
@@ -117,4 +120,3 @@ ignoreWhiteSpace = true
 ignoreWithElementOrder = true
 ignoreWithEncryption = false
 ignoreWithNoCheck = true
-

@@ -82,12 +82,12 @@ Write-Host "Migrations applied (partial or complete): $EFCoreMigrationSummary"
 # Make sure we run all commands in the Flyway project folder
 Set-Location $flywayProjectPath
 
-# 1️⃣ Get the difference between the deployed Dev DB and the empty schema model
+# Get the difference between the deployed Dev DB and the empty schema model
 $flywayDiffParams = @{
     FilePath     = "flyway"
     ArgumentList = @(
         "diff",
-        "-diff.source=development",
+        "-diff.source=shadow",
         "-diff.target=schemaModel"
     )
 }
