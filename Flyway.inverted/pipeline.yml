@@ -1,0 +1,12 @@
+---
+# Pipeline to run the inverted workflow PowerShell script
+trigger: none
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+- task: PowerShell@2
+  displayName: Run inverted workflow
+  inputs:
+    filePath: '$(System.DefaultWorkingDirectory)/Flyway.inverted/Inverted-Convert-EFMigrationsToFlywayDesktop.ps1'
+    pwsh: true
