@@ -1,18 +1,46 @@
--- Ensure demo databases exist
-CREATE DATABASE [NYC-Hybrid-EF];
-CREATE DATABASE [NYC-Hybrid-Flyway];
-CREATE DATABASE [NYC-Hybrid-Shadow];
-CREATE DATABASE [NYC-Hybrid-Production];
+-- Recreate demo databases
+USE [master];
 
-CREATE DATABASE [NYC-Inverted-EF];
-CREATE DATABASE [NYC-Inverted-Flyway];
-CREATE DATABASE [NYC-Inverted-Shadow];
-CREATE DATABASE [NYC-Inverted-Production];
+DECLARE @dbs TABLE (name sysname);
+INSERT INTO @dbs (name) VALUES
+    ('NYC-Hybrid-EF'),
+    ('NYC-Hybrid-Flyway'),
+    ('NYC-Hybrid-Shadow'),
+    ('NYC-Hybrid-Production'),
+    ('NYC-Inverted-EF'),
+    ('NYC-Inverted-Flyway'),
+    ('NYC-Inverted-Shadow'),
+    ('NYC-Inverted-Production'),
+    ('NYC-Simple-EF'),
+    ('NYC-Simple-Flyway'),
+    ('NYC-Simple-Shadow'),
+    ('NYC-Simple-Production'),
+    ('TasteWhisky_FWD');
 
-CREATE DATABASE [NYC-Simple-EF];
-CREATE DATABASE [NYC-Simple-Flyway];
-CREATE DATABASE [NYC-Simple-Shadow];
-CREATE DATABASE [NYC-Simple-Production];
+DECLARE @db sysname;
+DECLARE @sql NVARCHAR(MAX);
+
+DECLARE db_cursor CURSOR LOCAL FAST_FORWARD FOR
+    SELECT name FROM @dbs;
+OPEN db_cursor;
+FETCH NEXT FROM db_cursor INTO @db;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    IF DB_ID(@db) IS NOT NULL
+    BEGIN
+        SET @sql = N'ALTER DATABASE [' + @db + N'] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [' + @db + N'];';
+        EXEC (@sql);
+    END;
+
+    SET @sql = N'CREATE DATABASE [' + @db + N'];';
+    EXEC (@sql);
+
+    FETCH NEXT FROM db_cursor INTO @db;
+END;
+
+CLOSE db_cursor;
+DEALLOCATE db_cursor;
 
 /*
                            _)\.-.                                                _/\__
@@ -27,20 +55,4 @@ CREATE DATABASE [NYC-Simple-Production];
 
 Created by: THR-2025-@promicroNL
 */
-
-DECLARE @database_name VARCHAR(100);
-SELECT @database_name = DB_NAME();
-
--- Remove old backups for the current database
-EXEC msdb.dbo.sp_delete_database_backuphistory @database_name = @database_name;
-GO
-USE [master];
-GO
-ALTER DATABASE TasteWhisky_FWD SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-GO
--- Recreate the TasteWhisky_FWD database
-/****** Object:  Database [TW]    Script Date: 6-1-2025 14:45:15 ******/
-DROP DATABASE IF EXISTS TasteWhisky_FWD;
-GO
-CREATE DATABASE TasteWhisky_FWD;
 
