@@ -5,8 +5,18 @@ pool:
   vmImage: 'windows-latest'
 
 steps:
+- checkout: self
+  persistCredentials: true
 - task: PowerShell@2
   displayName: Run inverted workflow
   inputs:
     filePath: '$(System.DefaultWorkingDirectory)/Flyway.inverted/Inverted-Convert-EFMigrationsToFlywayDesktop.ps1'
     pwsh: true
+
+- script: |
+    git config user.name "$(Build.RequestedFor)"
+    git config user.email "$(Build.RequestedForEmail)"
+    git add .
+    git commit -m "chore: update Flyway artifacts" || echo "Nothing to commit"
+    git push
+  displayName: Commit Flyway artifacts
