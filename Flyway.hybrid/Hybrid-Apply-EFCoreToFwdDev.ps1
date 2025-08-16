@@ -1,58 +1,55 @@
 $text = @"
 
-                         _)\.-.                                                _/\__           
-         .-.__,___,_.-=-. )\`  a`\_                                        ---==/    \\        
-     .-.__\__,__,__.-=-. `/  \     `\     ___  _ _ _  ___           ___  ___    |.    \|\      
-    {~,-~-,-~.-~,-,;;;;\ |   '--;`)/     | __|| | | || _ \        | __|| __|   |  )   \\\      
-    \-,~_-~_-,~-,(_(_(;\/   ,;/         | _| | | | |||_| |       | _| | _|    \_/ |  //|\\     
-     ",-.~_,-~,-~,)_)_)'.  ;;(          |_|  \_____/|___/    VS  |___||_|         /   \\\/\\   
+                         _)\.-.                                                _/\__
+         .-.__,___,_.-=-. )\`  a`\_                                        ---==/    \\
+     .-.__\__,__,__.-=-. `/  \     `\     ___  _ _ _  ___           ___  ___    |.    \|\
+    {~,-~-,-~.-~,-,;;;;\ |   '--;`)/     | __|| | | || _ \        | __|| __|   |  )   \\
+    \-,~_-~_-,~-,(_(_(;\/   ,;/         | _| | | | |||_| |       | _| | _|    \_/ |  //|\\
+     ",-.~_,-~,-~,)_)_)'.  ;;(          |_|  \_____/|___/    VS  |___||_|         /   \\\/\\
         `~-,_-~,-~(_(_(_(_\  `;\                                                   \    \/\\/\/
 
+                   Hybrid model
 "@
 #Created by: THR-2025-@promicroNL
 
 Write-Host $text
 
-# Specify the paths to the EF Core and Flyway migration files
+# Specify the paths to the EF Core project and this Flyway project
 $efCore = "$PSScriptRoot\..\EFCore"
-$flywayProjectPath = "$PSScriptRoot\..\Flyway.hybrid\"
+$flywayProjectPath = $PSScriptRoot
 
 # Install module (once)
 # Install-Module PSToml -Scope CurrentUser
 
-# Import module
+# Import module for parsing TOML
 Import-Module PSToml
 
 # Read TOML file into a PowerShell object
-$tomlPath = "$flywayProjectPath\flyway.user.toml"
+$tomlPath = Join-Path $flywayProjectPath "flyway.user.toml"
 $tomlContent = Get-Content $tomlPath -Raw
 $data = ConvertFrom-Toml -InputObject $tomlContent
 
 # Access values
 $url = $data.environments.development.url
-$data.environments.PROD.displayName
+$data.environments.PROD.displayName | Out-Null
 
 Write-Host 'Attempt to convert the Flyway url to an ADO connection string'
 
 # use this information for our own local data
 if (!([string]::IsNullOrEmpty($url))) {
-	$FlywayURLRegex =
-	'jdbc:(?<RDBMS>[\w]{1,20})://(?<server>[\w\\\-\.]{1,40})(;instanceName=|/)(?<instanceName>[\w\\\-\.]{1,40})(?<port>:[\d]{1,4}|)(;.*databaseName=|/)(?<databaseName>[\w]{1,20})';
-	
-	if ($url -imatch $FlywayURLRegex) { #This copes with having no port.
-		if ($matches["RDBMS"] -eq 'sqlserver') {
-			$converted = $url -replace "jdbc:sqlserver://", "server=" -split ";" | ConvertFrom-StringData
-			$ConnectionString = ('Data Source={0}\{1}; Initial Catalog={2};Trusted_Connection={3};TrustServerCertificate=True' -f $converted.Server, $converted.InstanceName, $converted.DatabaseName, $converted.integratedSecurity) 
-		}
-	}
+        $FlywayURLRegex =
+        'jdbc:(?<RDBMS>[\w]{1,20})://(?<server>[\w\\\-\.]{1,40})(;instanceName=|/)(?<instanceName>[\w\\\-\.]{1,40})(?<port>:[\d]{1,4}|)(;.*databaseName=|/)(?<databaseName>[\w]{1,20})';
+
+        if ($url -imatch $FlywayURLRegex) { # This copes with having no port.
+                if ($matches["RDBMS"] -eq 'sqlserver') {
+                        $converted = $url -replace "jdbc:sqlserver://", "server=" -split ";" | ConvertFrom-StringData
+                        $ConnectionString = ('Data Source={0}\{1}; Initial Catalog={2};Trusted_Connection={3};TrustServerCertificate=True' -f $converted.Server, $converted.InstanceName, $converted.DatabaseName, $converted.integratedSecurity)
+                }
+        }
 }
 
 # Set the working directory to the project directory for the dotnet call
 Set-Location $efCore
-
-# $efCall = ('dotnet ef database  update --connection "{0}"' -f $ConnectionString)
-# write-host ('Run: {0}' -f $efCall)
-# Invoke-Expression $efCall
 
 $efParams = @{
     FilePath     = "dotnet"
@@ -124,3 +121,4 @@ $flywayMigrateParams = @{
     )
 }
 & $flywayMigrateParams.FilePath @($flywayMigrateParams.ArgumentList)
+

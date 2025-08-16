@@ -1,21 +1,22 @@
 $text = @"
 
-                         _)\.-.                                                _/\__           
-         .-.__,___,_.-=-. )\`  a`\_                                        ---==/    \\        
-     .-.__\__,__,__.-=-. `/  \     `\     ___  _ _ _  ___           ___  ___    |.    \|\      
-    {~,-~-,-~.-~,-,;;;;\ |   '--;`)/     | __|| | | || _ \        | __|| __|   |  )   \\\      
-    \-,~_-~_-,~-,(_(_(;\/   ,;/         | _| | | | |||_| |       | _| | _|    \_/ |  //|\\     
-     ",-.~_,-~,-~,)_)_)'.  ;;(          |_|  \_____/|___/    VS  |___||_|         /   \\\/\\   
+                         _)\.-.                                                _/\__
+         .-.__,___,_.-=-. )\`  a`\_                                        ---==/    \\
+     .-.__\__,__,__.-=-. `/  \     `\     ___  _ _ _  ___           ___  ___    |.    \|\
+    {~,-~-,-~.-~,-,;;;;\ |   '--;`)/     | __|| | | || _ \        | __|| __|   |  )   \\
+    \-,~_-~_-,~-,(_(_(;\/   ,;/         | _| | | | |||_| |       | _| | _|    \_/ |  //|\\
+     ",-.~_,-~,-~,)_)_)'.  ;;(          |_|  \_____/|___/    VS  |___||_|         /   \\\/\\
         `~-,_-~,-~(_(_(_(_\  `;\                                                   \    \/\\/\/
 
+                   Simple model
 "@
 #Created by: THR-2025-@promicroNL
 
 Write-Host $text
 
-# Specify the paths to the EF Core and Flyway migration files
+# Specify the paths to the EF Core project and this Flyway project
 $efCore = "$PSScriptRoot\..\EFCore"
-$flywayProjectPath = "$PSScriptRoot\..\Flyway.inverted\"
+$flywayProjectPath = $PSScriptRoot
 
 $efCoreMigrationFilesPath = Join-Path $efCore "migrations"
 $fwMigrationFilesPath = Join-Path $flywayProjectPath "migrations"
@@ -23,22 +24,21 @@ $fwMigrationFilesPath = Join-Path $flywayProjectPath "migrations"
 # Get a list of the EF Core migration files
 $efCoreMigrationFiles = Get-ChildItem $efCoreMigrationFilesPath
 
-# determine the status of already in place flyway migrations
+# Determine the status of already in place Flyway migrations
 $migrationfiles = Get-ChildItem $fwMigrationFilesPath | Select-Object Name | Where-Object { $_.Name -match '(^V)' }
 
-# extract migration name, same as EF Core migration name, from flyway migration files
-$migrationfilesWithoutNumber = $migrationfiles | Select-Object Name |  ForEach-Object { $_.Name.Substring(5, $_.Name.Length - 5).replace('.sql', '') }  
+# Extract migration name, same as EF Core migration name, from Flyway migration files
+$migrationfilesWithoutNumber = $migrationfiles | Select-Object Name | ForEach-Object { $_.Name.Substring(5, $_.Name.Length - 5).replace('.sql', '') }
 
 $lastMigrationFile = $migrationfiles.Name | Select-Object -last 1
-# what was the last migration, start here with iterating
+# What was the last migration? start iterating from there
 if ($null -eq $lastMigrationFile) {
     Write-Host "Starting migration, no flyway migration found"
     [int]$version = 0
     $migrationfilesWithoutNumber = @()
-}
-else {
+} else {
     Write-Host "Starting migration, last flyway migration was $lastMigrationFile"
-    [int]$version = $lastMigrationFile.Substring(1, 3)    
+    [int]$version = $lastMigrationFile.Substring(1, 3)
 }
 
 ## Loop through each EF Core migration file with these defaults
@@ -55,41 +55,62 @@ foreach ($efCoreMigrationFile in $efCoreMigrationFiles) {
         # Create a Flyway migration filename
         Write-Host "Converting $CurrentEfCoreMigrationFileBaseName"
         $migrationName = $CurrentEfCoreMigrationFileBaseName.Replace("_", "__")
-        
-        # skip all files that are already converted to Flyway
+
+        # Skip all files that are already converted to Flyway
         if ($migrationfilesWithoutNumber.Contains($migrationName)) {
             Write-Host "SKIPPED conversion" -ForegroundColor "Yellow"
             Write-Host "$CurrentEfCoreMigrationFileBaseName already part of the Flyway migration folder"
         }
-        # converts the EF Core migration file to the Flyway format
+        # Converts the EF Core migration file to the Flyway format
         else {
             $migrationType = "V" # first the V(ersion) migration
 
             $version += 1
-            $versionPadded= ([string]$version).PadLeft(3, '0')
+            $versionPadded = ([string]$version).PadLeft(3, '0')
             Write-Host "Flyway version = $versionPadded"
 
             while ($undoMigrationStarted -eq $false) { # this will loop twice, for the MigrationType V and U
-                Write-Host "Extracting the $migrationType SQL-script from EF Core for $PreviousEfCoreMigrationFileBaseName vs $CurrentEfCoreMigrationFileBaseName" 
+                Write-Host "Extracting the $migrationType SQL-script from EF Core for $PreviousEfCoreMigrationFileBaseName vs $CurrentEfCoreMigrationFileBaseName"
                 if ($migrationType -eq "V") {
-                       $fileContent = dotnet ef migrations script $PreviousEfCoreMigrationFileBaseName $CurrentEfCoreMigrationFileBaseName
+                    # Generate SQL script for forward migration
+                    $scriptParams = @{
+                        FilePath     = "dotnet"
+                        ArgumentList = @(
+                            "ef", "migrations", "script",
+                            $PreviousEfCoreMigrationFileBaseName,
+                            $CurrentEfCoreMigrationFileBaseName
+                        )
+                    }
                 }
                 else {
-                    $fileContent = dotnet ef migrations script $CurrentEfCoreMigrationFileBaseName $PreviousEfCoreMigrationFileBaseName
+                    # Generate SQL script for undo migration
+                    $scriptParams = @{
+                        FilePath     = "dotnet"
+                        ArgumentList = @(
+                            "ef", "migrations", "script",
+                            $CurrentEfCoreMigrationFileBaseName,
+                            $PreviousEfCoreMigrationFileBaseName
+                        )
+                    }
                     $undoMigrationStarted = $true
                 }
 
-                Write-Host "Trying to flywayify the $migrationType for: $CurrentEfCoreMigrationFileBaseName"                       
-          
+                $fileContent = & $scriptParams.FilePath @($scriptParams.ArgumentList)
+
+                Write-Host "Trying to flywayify the $migrationType for: $CurrentEfCoreMigrationFileBaseName"
+
                 $flywayFileContent = $fileContent | Foreach-Object { $_ `
                         -replace [regex]::escape('[ProductVersion] nvarchar(32) NOT NULL,'), '[ProductVersion] nvarchar(32) NOT NULL, [FlywayInstallRank] INT NULL' `
                         -replace [regex]::escape('Build started...'), '' `
-                        -replace [regex]::escape('Build succeeded.'), '' 
+                        -replace [regex]::escape('Build succeeded.'), ''
                 }
 
                 $path = ("{0}\{1}{2}_{3}.sql" -f $fwMigrationFilesPath, $migrationType, $versionPadded, $migrationName)
 
-                Set-Content -Path $path -Value $flywayFileContent
+                # Save the generated Flyway migration
+                $contentParams = @{ Path = $path; Value = $flywayFileContent }
+                Set-Content @contentParams
+
                 Write-Host "COMPLETED $migrationType conversion to $path" -ForegroundColor "Green"
 
                 $migrationType = "U" # next create the (U)ndo migration
@@ -107,34 +128,14 @@ foreach ($efCoreMigrationFile in $efCoreMigrationFiles) {
 # Make sure we run all commands in the Flyway project folder
 Set-Location $flywayProjectPath
 
-# Apply the migrations to shadow database
+# Migrate and baseline production DB (schema history table doesn’t exist yet)
 $flywayMigrateParams = @{
     FilePath     = "flyway"
     ArgumentList = @(
         "migrate",
-        "-environment=shadow"
+        "-baselineOnMigrate=true",
+        "-environment=PROD"
     )
 }
 & $flywayMigrateParams.FilePath @($flywayMigrateParams.ArgumentList)
 
-
-# Populate the schema model from the migrations, the "inverted" part
-# 1Get the difference between the shadow DB and the (empty) schema model
-$flywayDiffParams = @{
-    FilePath     = "flyway"
-    ArgumentList = @(
-        "diff",
-        "-diff.source=development",
-        "-diff.target=schemaModel"
-    )
-}
-& $flywayDiffParams.FilePath @($flywayDiffParams.ArgumentList)
-
-# Apply all changes to the schema model on disk
-$flywayModelParams = @{
-    FilePath     = "flyway"
-    ArgumentList = @("model")
-}
-& $flywayModelParams.FilePath @($flywayModelParams.ArgumentList)
-
-# git commit and create PR
