@@ -8,7 +8,7 @@ $text = @"
      ",-.~_,-~,-~,)_)_)'.  ;;(          |_|  \_____/|___/    VS  |___||_|         /   \\\/\\
         `~-,_-~,-~(_(_(_(_\  `;\                                                   \    \/\\/\/
 
-                   Simple model
+                   Inverted model
 "@
 #Created by: THR-2025-@promicroNL
 
@@ -24,14 +24,13 @@ $fwMigrationFilesPath = Join-Path $flywayProjectPath "migrations"
 # Get a list of the EF Core migration files
 $efCoreMigrationFiles = Get-ChildItem $efCoreMigrationFilesPath
 
-# Determine the status of already in place Flyway migrations
+# determine the status of already in place Flyway migrations
 $migrationfiles = Get-ChildItem $fwMigrationFilesPath | Select-Object Name | Where-Object { $_.Name -match '(^V)' }
 
-# Extract migration name, same as EF Core migration name, from Flyway migration files
+# extract migration name, same as EF Core migration name, from Flyway migration files
 $migrationfilesWithoutNumber = $migrationfiles | Select-Object Name | ForEach-Object { $_.Name.Substring(5, $_.Name.Length - 5).replace('.sql', '') }
 
 $lastMigrationFile = $migrationfiles.Name | Select-Object -last 1
-# What was the last migration? start iterating from there
 if ($null -eq $lastMigrationFile) {
     Write-Host "Starting migration, no flyway migration found"
     [int]$version = 0
@@ -56,12 +55,12 @@ foreach ($efCoreMigrationFile in $efCoreMigrationFiles) {
         Write-Host "Converting $CurrentEfCoreMigrationFileBaseName"
         $migrationName = $CurrentEfCoreMigrationFileBaseName.Replace("_", "__")
 
-        # Skip all files that are already converted to Flyway
+        # skip all files that are already converted to Flyway
         if ($migrationfilesWithoutNumber.Contains($migrationName)) {
             Write-Host "SKIPPED conversion" -ForegroundColor "Yellow"
             Write-Host "$CurrentEfCoreMigrationFileBaseName already part of the Flyway migration folder"
         }
-        # Converts the EF Core migration file to the Flyway format
+        # converts the EF Core migration file to the Flyway format
         else {
             $migrationType = "V" # first the V(ersion) migration
 
@@ -107,7 +106,6 @@ foreach ($efCoreMigrationFile in $efCoreMigrationFiles) {
 
                 $path = ("{0}\{1}{2}_{3}.sql" -f $fwMigrationFilesPath, $migrationType, $versionPadded, $migrationName)
 
-                # Save the generated Flyway migration
                 $contentParams = @{ Path = $path; Value = $flywayFileContent }
                 Set-Content @contentParams
 
@@ -128,13 +126,13 @@ foreach ($efCoreMigrationFile in $efCoreMigrationFiles) {
 # Make sure we run all commands in the Flyway project folder
 Set-Location $flywayProjectPath
 
-# Migrate and baseline production DB (schema history table doesn’t exist yet)
+# Apply the migrations to shadow database
 $flywayMigrateParams = @{
     FilePath     = "flyway"
     ArgumentList = @(
         "migrate",
-        "-baselineOnMigrate=true",
-        "-environment=PROD"
+        "-environment=PROD",
+        "-baselineOnMigrate=true"
     )
 }
 & $flywayMigrateParams.FilePath @($flywayMigrateParams.ArgumentList)

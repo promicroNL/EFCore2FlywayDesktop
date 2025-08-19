@@ -143,7 +143,8 @@ $flywayDiffParams = @{
     FilePath     = "flyway"
     ArgumentList = @(
         "diff",
-        "-diff.source=development",
+        "-diff.source=migrations",
+        "-diff.buildEnvironment=shadow",
         "-diff.target=schemaModel"
     )
 }

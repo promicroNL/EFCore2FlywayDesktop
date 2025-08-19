@@ -10,8 +10,8 @@ mixed = true
 outOfOrder = true
 validateMigrationNaming = true
 
-[flyway.check]
-majorTolerance = 0
+  [flyway.check]
+  majorTolerance = 0
 
 [flyway.sqlserver.clean]
 mode = "all"
