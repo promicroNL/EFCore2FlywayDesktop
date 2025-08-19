@@ -1,0 +1,9 @@
+[environments.development]
+url = "jdbc:sqlserver://localhost;instanceName=Bartender;databaseName=NYC-Simple-Flyway;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+displayName = "Dev"
+
+[environments.shadow]
+url = "jdbc:sqlserver://localhost;instanceName=bartender;databaseName=NYC-Simple-Shadow;encrypt=true;integratedSecurity=true;trustServerCertificate=true"
+
+[environments.PROD]
+url = "jdbc:sqlserver://localhost;instanceName=bartender;databaseName=NYC-Simple-production;encrypt=true;integratedSecurity=true;trustServerCertificate=true"

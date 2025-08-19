@@ -1,0 +1,17 @@
+databaseType = "SqlServer"
+id = "b7e7fc95-f345-4cbe-bf09-0d8365fe0503"
+name = "Flyway"
+
+[flyway]
+defaultSchema = "dbo"
+errorOverrides = [ "S0001:0:I-" ]
+locations = [ "filesystem:migrations" ]
+mixed = true
+outOfOrder = true
+validateMigrationNaming = true
+
+  [flyway.check]
+  majorTolerance = 0
+
+[flyway.sqlserver.clean]
+mode = "all"

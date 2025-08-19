@@ -50,6 +50,7 @@ public class Tasting
     public DateTime Date { get; set; }
     public int Rating { get; set; }
     public string? Notes { get; set; }
+    public int NYCRating { get; set; } 
 }
 
 public class Customer

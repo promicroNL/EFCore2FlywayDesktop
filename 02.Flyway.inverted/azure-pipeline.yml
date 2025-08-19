@@ -1,0 +1,28 @@
+# Pipeline to run the simple workflow PowerShell script
+trigger: none
+pool:
+  name: tonie-local
+
+variables:
+  AZP_AGENT_CLEANUP_PSMODULES_IN_POWERSHELL: 'true'
+
+steps:
+- checkout: self
+  persistCredentials: true
+  clean: true
+  fetchDepth: 0
+- task: PowerShell@2
+  displayName: Run inverted workflow
+  inputs:
+    filePath: '$(System.DefaultWorkingDirectory)/02.Flyway.inverted/Convert-EFMigrationsToSchemaModel.ps1'
+    pwsh: true
+# Commit via powershell
+- task: PowerShell@2
+  displayName: Commit & push Flyway artifacts
+  inputs:
+    filePath: scripts/commit-and-push.ps1
+    arguments: >
+      -CommitMessage "chore: update Flyway artifacts"
+      -NewBranch "02/flyway-update-NYC"
+    pwsh: true
+
