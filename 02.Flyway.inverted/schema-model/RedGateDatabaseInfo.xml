@@ -1,17 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <DatabaseInformation Version="3">
   <ScriptFileEncoding>UTF8</ScriptFileEncoding>
+  <DefaultCollation>Latin1_General_CI_AS</DefaultCollation>
   <DefaultSchema>dbo</DefaultSchema>
   <DefaultUser>dbo</DefaultUser>
   <DefaultFilegroup>PRIMARY</DefaultFilegroup>
   <DatabaseVersion>15</DatabaseVersion>
-  <ServerVersion>15.0.2000.5</ServerVersion>
+  <ServerVersion>15.0</ServerVersion>
   <CompatibilityLevel>150</CompatibilityLevel>
   <EngineEdition>Express</EngineEdition>
   <IsAzure>False</IsAzure>
   <ScriptFolderType>Default</ScriptFolderType>
   <MaxDataFileSize>10485760</MaxDataFileSize>
-  <ProjectGuid>7d28793b-a6a0-418c-8249-70e772aa4de9</ProjectGuid>
+  <ProjectGuid>b7e7fc95-f345-4cbe-bf09-0d8365fe0503</ProjectGuid>
   <WriteToFileOptions>
     <Prefixes>
       <None>

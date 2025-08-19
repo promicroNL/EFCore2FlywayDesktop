@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <NamedFilter version="1" type="SQLCompareFilter">
   <FilterName>Filter</FilterName>
   <Filter version="1" type="DifferenceFilter">
@@ -18,7 +18,7 @@
       </AsymmetricKey>
       <Certificate version="1">
         <Include>True</Include>
-        <Expression>TRUE</Expression>
+        <Expression />
       </Certificate>
       <Contract version="1">
         <Include>True</Include>
@@ -69,7 +69,7 @@
         <Expression>TRUE</Expression>
       </Queue>
       <Role version="1">
-        <Include>True</Include>
+        <Include>False</Include>
         <Expression>TRUE</Expression>
       </Role>
       <Route version="1">

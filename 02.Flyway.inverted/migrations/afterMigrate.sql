@@ -5,11 +5,13 @@
      {~,-~-,-~.-~,-,;;;;\ |   '--;`)/     | __|| | | || _ \        | __|| __|   |  )   \\\      
       \-,~_-~_-,~-,(_(_(;\/   ,;/         | _| | | | |||_| |       | _| | _|    \_/ |  //|\\    
        ",-.~_,-~,-~,)_)_)'.  ;;(          |_|  \_____/|___/    VS  |___||_|         /   \\\/\\  
-         `~-,_-~,-~(_(_(_(_\  `;\                                                   \    \/\\/\/
+        `~-,_-~,-~(_(_(_(_\  `;\                                                   \    \/\\/\/
+
+                   Inverted model
 
 Description: update the install rank of flyway migration in the __EFMigrationsHistory table
 
-Created by: THR-2023-@promicroNL
+Created by: THR-2025-@promicroNL
  */
 
 UPDATE

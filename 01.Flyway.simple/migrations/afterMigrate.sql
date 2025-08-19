@@ -7,7 +7,7 @@
        ",-.~_,-~,-~,)_)_)'.  ;;(          |_|  \_____/|___/    VS  |___||_|         /   \\\/\\  
         `~-,_-~,-~(_(_(_(_\  `;\                                                   \    \/\\/\/
 
-                   Hybrid model
+                   Simple model
 
 Description: update the install rank of flyway migration in the __EFMigrationsHistory table
 
