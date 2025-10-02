@@ -72,8 +72,8 @@ ForEach-Object {
 } |
 Sort-Object -Unique -Descending -CaseSensitive
 
-# Create summary variable
-$EFCoreMigrationSummary = $migrations -join ', '
+# Remove leading digits + underscore, then join nicely with "-"
+$EFCoreMigrationSummary = ($migrations | ForEach-Object { $_ -replace '^\d+_' , '' }) -join '-'
 
 Write-Host "Migrations applied (partial or complete): $EFCoreMigrationSummary"
 

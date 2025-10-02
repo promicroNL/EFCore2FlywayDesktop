@@ -15,18 +15,18 @@ USE [master];
 
 DECLARE @dbs TABLE (name sysname);
 INSERT INTO @dbs (name) VALUES
-    ('NYC-Hybrid-EF'),
-    ('NYC-Hybrid-Flyway'),
-    ('NYC-Hybrid-Shadow'),
-    ('NYC-Hybrid-Production'),
-    ('NYC-Inverted-EF'),
-    ('NYC-Inverted-Flyway'),
-    ('NYC-Inverted-Shadow'),
-    ('NYC-Inverted-Production'),
-    ('NYC-Simple-EF'),
-    ('NYC-Simple-Flyway'),
-    ('NYC-Simple-Shadow'),
-    ('NYC-Simple-Production'),
+    ('Demo-Hybrid-EF'),
+    ('Demo-Hybrid-Flyway'),
+    ('Demo-Hybrid-Shadow'),
+    ('Demo-Hybrid-Production'),
+    ('Demo-Inverted-EF'),
+    ('Demo-Inverted-Flyway'),
+    ('Demo-Inverted-Shadow'),
+    ('Demo-Inverted-Production'),
+    ('Demo-Simple-EF'),
+    ('Demo-Simple-Flyway'),
+    ('Demo-Simple-Shadow'),
+    ('Demo-Simple-Production'),
     ('TasteWhisky_FWD');
 
 DECLARE @db sysname;
